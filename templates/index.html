@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Chatbot</title>
+</head>
+<body>
+    <h1>Chat with PDF</h1>
+    <form method="POST" enctype="multipart/form-data" action="/">
+        <label for="file">Upload PDF Files:</label>
+        <input type="file" name="file" multiple>
+        <button type="submit">Submit & Process</button>
+    </form>
+
+    <form method="POST" action="/ask">
+        <label for="question">Ask a Question:</label>
+        <input type="text" name="question" required>
+        <button type="submit">Submit</button>
+    </form>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+</body>
+</html>
