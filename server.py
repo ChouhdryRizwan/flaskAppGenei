@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from werkzeug.utils import secure_filename
 import os
 from PyPDF2 import PdfReader
@@ -12,16 +12,11 @@ from langchain.prompts import PromptTemplate
 from dotenv import load_dotenv
 import logging
 from PyPDF2.errors import PdfReadError
-import concurrent.futures
-import faiss
-
 
 # Load environment variables
 load_dotenv()
-faiss.omp_set_num_threads(32)
 
 google_api_key = os.getenv("GOOGLE_API_KEY")
-
 
 if not google_api_key:
     raise ValueError("Google API Key not found. Please check your environment settings.")
@@ -92,9 +87,8 @@ def get_conversation_chain():
 def index():
     if request.method == "POST":
         if 'file' not in request.files:
-            flash('No file part')
-            return redirect(request.url)
-        
+            return jsonify({"messages": ["No file part"]}), 400
+
         files = request.files.getlist('file')
         raw_text = ""
 
@@ -108,15 +102,15 @@ def index():
         if raw_text:
             text_chunks = get_text_chunks(raw_text)
             get_store_in_vector(text_chunks)
-            flash("Processing complete! You can now ask questions.")
+            return jsonify({"messages": ["Processing complete! You can now ask questions."]}), 200
         else:
-            flash("No text was extracted from the uploaded PDFs. Please try again.")
+            return jsonify({"messages": ["No text was extracted from the uploaded PDFs. Please try again."]}), 400
 
     return render_template("index.html")
 
 @app.route("/ask", methods=["POST"])
 def ask():
-    user_question = request.form.get("question")
+    user_question = request.json.get("question")
 
     if user_question:
         embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
@@ -125,16 +119,16 @@ def ask():
             logging.info("Vector store loaded successfully.")
         except Exception as e:
             logging.error(f"Error loading vector store: {e}")
-            return "Error loading document index."
+            return jsonify({"messages": ["Error loading document index."]}), 500
 
         docs = vector_store.similarity_search(user_question)
         chain = get_conversation_chain()
         response = chain({"input_documents": docs, "question": user_question}, return_only_outputs=True)
-        
-        return response.get("output_text", "No response generated.")
 
-    return "No question provided."
+        output_text = response.get("output_text", "No response generated.")
+        return jsonify({"messages": [output_text]}), 200
 
+    return jsonify({"messages": ["No question provided."]}), 400
 
-# if __name__ == "__main__":
-#     app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=True)

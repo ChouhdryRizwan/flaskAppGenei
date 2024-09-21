@@ -15,4 +15,5 @@ faiss-cpu
 langchain_google_genai
 langchain-community
 PyCryptodome
+quart
 
