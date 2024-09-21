@@ -119,37 +119,33 @@
               body: JSON.stringify({ question }),
             });
             const result = await response.json();
+            displayMessages(result);
             console.log(result);
-            displayMessages(result.output_text);
           } catch (error) {
             console.error("Error asking question:", error);
           }
           btn.innerHTML = "submit";
         });
+        function displayMessages(result) {
+  const messageList = document.getElementById("messageList");
+  messageList.innerHTML = ""; // Clear previous messages
 
-      function displayMessages(messages) {
-        const messageList = document.getElementById("messageList");
-        messageList.innerHTML = "";
+  // Check if result contains messages and display them
+  if (result.messages && Array.isArray(result.messages)) {
+    result.messages.forEach((message) => {
+      const listItem = document.createElement("li");
+      listItem.textContent = message.trim(); // Trim extra spaces
+      messageList.appendChild(listItem);
+    });
+  } else {
+    const listItem = document.createElement("li");
+    listItem.textContent = "No messages found.";
+    messageList.appendChild(listItem);
+  }
 
-        // Check if messages is an array
-        if (Array.isArray(messages)) {
-          messages.forEach((message) => {
-            const listItem = document.createElement("li");
-            listItem.textContent = message;
-            messageList.appendChild(listItem);
-          });
-        } else if (typeof messages === "string") {
-          const listItem = document.createElement("li");
-          listItem.textContent = messages;
-          messageList.appendChild(listItem);
-        } else {
-          const listItem = document.createElement("li");
-          listItem.textContent = "Unexpected error occurred.";
-          messageList.appendChild(listItem);
-        }
+  document.getElementById("messages").classList.remove("d-none");
+}
 
-        document.getElementById("messages").classList.remove("d-none");
-      }
     </script>
   </body>
 </html>
