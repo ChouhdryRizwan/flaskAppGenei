@@ -138,5 +138,5 @@ def ask():
     return jsonify({"messages": ["No question provided."]}), 400
 
 if __name__ == "__main__":
-    # app.secret_key = 'ANY_SECRET_KEY'
+    app.secret_key = 'ANY_SECRET_KEY'
     app.run(debug=True)
