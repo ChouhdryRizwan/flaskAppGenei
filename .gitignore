@@ -1,2 +1,5 @@
-env/
+# Ignore __pycache__ directories
 __pycache__/
+
+# Ignore Python virtual environment
+env/
