@@ -17,12 +17,20 @@ from PyPDF2.errors import PdfReadError
 # Load environment variables
 load_dotenv()
 
-google_api_key = os.getenv("GOOGLE_API_KEY")
+# google_api_key = os.getenv("GOOGLE_API_KEY")
 
-if not google_api_key:
-    raise ValueError("Google API Key not found. Please check your environment settings.")
+# if not google_api_key:
+#     raise ValueError("Google API Key not found. Please check your environment settings.")
 
-genai.configure(api_key=google_api_key)
+# genai.configure(api_key=google_api_key)
+
+genai_keys = [
+        "AIzaSyD4AvqSy5yE6FVIceijwFViKi76SObHsOY",
+        "AIzaSyAPasufInx1YSA2N83orvuagkMe4ZnSOfE",
+        'AIzaSyCu4O8kGxwU1BqGhlbiEnB-QQpEPzuEKfM',
+        'AIzaSyCvb9F0bK_R4H14KDnWnbJeZSnIWvsDlAM'
+
+    ]
 
 logging.basicConfig(level=logging.INFO)
 
@@ -65,12 +73,6 @@ def get_text_chunks(text):
     )
     return text_splitter.split_text(text)
 
-# def get_store_in_vector(text_chunks):
-#     embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
-#     vector_store = FAISS.from_texts(text_chunks, embedding=embeddings)
-#     vector_store.save_local("faiss_index")
-#     logging.info("Vector store created and saved locally.")
-
 def get_store_in_vector(text_chunks):
     embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001")
     faiss_index = FAISS.from_texts(text_chunks, embedding=embeddings)
@@ -89,6 +91,8 @@ def get_conversation_chain():
     prompt = PromptTemplate(template=prompt_template,
                             input_variables=["context", "question"])
     return load_qa_chain(model, chain_type="stuff", prompt=prompt)
+
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -130,7 +134,7 @@ def ask():
 
         docs = faiss_index.similarity_search(user_question)
         chain = get_conversation_chain()
-        response = chain({"input_documents": docs, "question": user_question}, return_only_outputs=True)
+        response = chain.invoke({"input_documents": docs, "question": user_question}, return_only_outputs=True)
 
         output_text = response.get("output_text", "No response generated.")
         return jsonify({"messages": [output_text]}), 200

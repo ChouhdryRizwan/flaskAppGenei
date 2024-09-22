@@ -197,11 +197,6 @@
     <div class="footer mt-5">
       <p class="py-3 fw-bold m-0">Developed By T-REX (APTECH METRO STAR GATE) &copy; 2024. All Rights Reserved.</p>
   </div>
-
-    <!-- Translation History Section -->
-
-    <!-- Footer code here -->
-    <!-- Bootstrap JS (optional) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
@@ -209,10 +204,7 @@
       document.addEventListener("DOMContentLoaded", function () {
         loadHistoryFromSession();
         checkButtonStatus();
-        
-      if (history.length > 0) {
-        document.getElementById("historyTable").style.display = "block";
-      }
+
       });
       const messageList = document.getElementById("messageList");
       const messages = document.getElementById("messages");
@@ -335,13 +327,13 @@
         let rowHTML = `<tr id="row-${index}">
                             <td>${entry.question}</td>
                             <td sytle="text-wrap:nowrap;">${entry.answer}</td>
-                            <td class="text-center"><span class="btn btn-outline-danger" onclick="deleteHistoryy(${index})">&times;</span></td>
+                            <td class="text-center"><span class="btn btn-outline-danger" onclick="deleteHistory(${index})">&times;</span></td>
                           </tr>`;
         historyTable.innerHTML += rowHTML;
         checkButtonStatus();
       }
 
-      function deleteHistoryy(index) {
+      function deleteHistory(index) {
         // Load history from session storage
         let history = JSON.parse(sessionStorage.getItem("answerhistory")) || [];
 
@@ -387,6 +379,8 @@
             document.getElementById('showHistory').classList.add('d-blockk')
           }else{
             document.getElementById('showHistory').classList.add('d-nonee')
+            document.getElementById("table-card").style.display = "none";
+            document.getElementById("showHistory").style.display = "none";
           }
        }
     </script>
