@@ -3,19 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PDF Chatbot</title>
-    <style>
-      #loading {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-      }
-
-      .progress {
-        width: 100%;
-      }
-    </style>
-    <!-- Bootstrap CSS -->
+    <title>ApGENie</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -24,32 +12,28 @@
   <body class="bg-light">
     <!-- Header code here -->
     <div class="container mt-5">
-      <h1 class="text-center mb-4">Chat with PDF</h1>
+      <h1 class="text-center mb-4">Chat with Files</h1>
 
       <!-- PDF Upload Form -->
       <div class="card mb-4">
-        <div class="card-header">Upload PDF Files</div>
+        <div class="card-header">Upload Files</div>
         <div class="card-body">
           <input type="file" id="pdfFiles" class="form-control" multiple />
           <button id="uploadButton" class="btn btn-primary mt-3">
             Submit & Process
           </button>
-
-          <!-- Loading Animation -->
-          <div id="loading" class="d-none">
-            <div class="spinner-border" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
-            <div class="progress mt-2">
-              <div
-                id="progressBar"
-                class="progress-bar"
-                role="progressbar"
-                style="width: 0%"
-                aria-valuenow="0"
-                aria-valuemin="0"
-                aria-valuemax="100"
-              ></div>
+          <div
+            id="progressContainer"
+            class="progress mt-3 d-none"
+            style="height: 20px"
+          >
+            <div
+              id="progressBar"
+              class="progress-bar"
+              role="progressbar"
+              style="width: 0%"
+            >
+              0%
             </div>
           </div>
         </div>
@@ -82,14 +66,71 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+      const messageList = document.getElementById("messageList");
       document
         .getElementById("uploadButton")
         .addEventListener("click", async () => {
           const files = document.getElementById("pdfFiles").files;
           const formData = new FormData();
+          const progressContainer =
+            document.getElementById("progressContainer");
+          const progressBar = document.getElementById("progressBar");
+          const messageList = document.getElementById("messageList");
+          if (files.length === 0) {
+            alert("Please select files to upload.");
+            return;
+          }
+
+          // Show the progress bar when upload starts
+          progressContainer.classList.remove("d-none");
+
           for (const file of files) {
             formData.append("file", file);
           }
+
+          const xhr = new XMLHttpRequest();
+          xhr.open("POST", "/", true);
+
+          // Show the progress bar when upload starts
+          progressContainer.classList.remove("d-none");
+
+          // Track the upload progress
+          xhr.upload.addEventListener("progress", (event) => {
+            if (event.lengthComputable) {
+              const percentComplete = (event.loaded / event.total) * 100;
+              progressBar.style.width = percentComplete + "%";
+              progressBar.textContent = Math.round(percentComplete) + "%";
+            }
+          });
+
+          // On upload complete
+          xhr.addEventListener("load", () => {
+            if (xhr.status === 200) {
+              const result = JSON.parse(xhr.responseText);
+              displayMessages(result);
+
+              // Hide the progress bar after upload completes
+              setTimeout(() => {
+                progressContainer.classList.add("d-none");
+                progressBar.style.width = "0%"; // Reset progress bar
+                progressBar.textContent = "0%";
+              }, 1000);
+            } else {
+              console.error("Error uploading files:", xhr.statusText);
+              messageList.innerHTML = "Error in uploading files";
+              progressContainer.classList.add("d-none");
+            }
+          });
+
+          // Handle error
+          xhr.addEventListener("error", () => {
+            console.error("Error uploading files");
+            messageList.innerHTML = "Error in uploading files";
+            progressContainer.classList.add("d-none");
+          });
+
+          // Send the request
+          xhr.send(formData);
 
           try {
             const response = await fetch("/", {
@@ -97,9 +138,12 @@
               body: formData,
             });
             const result = await response.json();
-            displayMessages(result.messages);
+            displayMessages(result);
+            console.log(result);
           } catch (error) {
             console.error("Error uploading files:", error);
+            messageList.innerHTML = "";
+            messageList.innerHTML = "Error in uploading files";
           }
         });
 
@@ -120,32 +164,24 @@
             });
             const result = await response.json();
             displayMessages(result);
-            console.log(result);
           } catch (error) {
             console.error("Error asking question:", error);
+            messageList.innerHTML = "";
+            messageList.innerHTML = "Error in asking queations";
           }
           btn.innerHTML = "submit";
         });
-        function displayMessages(result) {
-  const messageList = document.getElementById("messageList");
-  messageList.innerHTML = ""; // Clear previous messages
 
-  // Check if result contains messages and display them
-  if (result.messages && Array.isArray(result.messages)) {
-    result.messages.forEach((message) => {
-      const listItem = document.createElement("li");
-      listItem.textContent = message.trim(); // Trim extra spaces
-      messageList.appendChild(listItem);
-    });
-  } else {
-    const listItem = document.createElement("li");
-    listItem.textContent = "No messages found.";
-    messageList.appendChild(listItem);
-  }
+      function displayMessages(result) {
+        messageList.innerHTML = "";
 
-  document.getElementById("messages").classList.remove("d-none");
-}
-
+        result.messages.forEach((message) => {
+          const listItem = document.createElement("li");
+          listItem.textContent = message.trim();
+          messageList.appendChild(listItem);
+        });
+        document.getElementById("messages").classList.remove("d-none");
+      }
     </script>
   </body>
 </html>
