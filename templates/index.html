@@ -8,130 +8,231 @@
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+
+    <style>
+      .header {
+        color: white;
+        padding: 30px 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: relative;
+      }
+
+      .header-container {
+        background: linear-gradient(90deg, #207500, #092d79, #0063ff);
+      }
+
+      img {
+        width: 110px;
+        height: auto;
+      }
+      .logo-center {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .d-nonee {
+        display: none;
+      }
+      .d-blockk {
+        display: block;
+        display: flex;
+      }
+      .dots-container {
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: rgb(9, 107, 235);
+        animation: dot-blink 1.4s infinite ease-in-out both;
+      }
+
+      .dot:nth-child(1) {
+        animation-delay: -0.32s;
+      }
+
+      .dot:nth-child(2) {
+        animation-delay: -0.16s;
+      }
+
+      @keyframes dot-blink {
+        0%,
+        80%,
+        100% {
+          transform: scale(0);
+        }
+        40% {
+          transform: scale(1);
+        }
+      }
+
+      .loader {
+        width: fit-content;
+        font-weight: bold;
+        font-family: monospace;
+        font-size: 20px;
+        color: gray;
+        margin-left: 20px;
+        clip-path: inset(0 100% 0 0);
+        animation: l5 2s steps(11) infinite;
+      }
+      .loader:before {
+        content: "Loading...";
+      }
+      @keyframes l5 {
+        to {
+          clip-path: inset(0 -1ch 0 0);
+        }
+      }
+      .footer {
+        background: linear-gradient(90deg, #0063ff, #092d79, #207500);
+        color: white;
+        text-align: center;
+      }
+    </style>
   </head>
   <body class="bg-light">
-    <!-- Header code here -->
-    <div class="container mt-5">
-      <h1 class="text-center mb-4">Chat with Files</h1>
+    <div class="header-container">
+      <div class="header mx-5">
+        <!-- Left logo -->
+        <img
+          src="{{ url_for('static', filename='img/TECHWIZ-5.png') }}"
+          alt="Logo 1"
+        />
 
-      <!-- PDF Upload Form -->
-      <div class="card mb-4">
-        <div class="card-header">Upload Files</div>
-        <div class="card-body">
-          <input type="file" id="pdfFiles" class="form-control" multiple />
-          <button id="uploadButton" class="btn btn-primary mt-3">
-            Submit & Process
-          </button>
-          <div
-            id="progressContainer"
-            class="progress mt-3 d-none"
-            style="height: 20px"
-          >
-            <div
-              id="progressBar"
-              class="progress-bar"
-              role="progressbar"
-              style="width: 0%"
-            >
-              0%
-            </div>
-          </div>
-        </div>
-      </div>
+        <!-- Center logo (Geo-Speak) -->
+        <img
+          src="{{ url_for('static', filename='img/AP Genie.png') }}"
+          alt="Geo-Speak Logo"
+          class="logo-center"
+        />
 
-      <!-- Question Form -->
-      <div class="card mb-4">
-        <div class="card-header">Ask a Question</div>
-        <div class="card-body">
-          <input
-            type="text"
-            id="question"
-            class="form-control"
-            placeholder="Your Question"
-            required
-          />
-          <button id="questionButton" class="btn btn-success mt-3">
-            Submit
-          </button>
-        </div>
-      </div>
-
-      <!-- Display Messages -->
-      <div id="messages" class="alert alert-info d-none" role="alert">
-        <pre id="messageList"></pre>
+        <!-- Right logo -->
+        <img
+          src="{{ url_for('static', filename='img/logo.png') }}"
+          alt="Logo 2"
+          class="logo-right"
+        />
       </div>
     </div>
+    <div class="container mt-5">
+      <div class="row justify-content-center">
+        <div class="col-md-10">
+          <h1 class="text-center mb-4 fw-bold">Chat with PDF</h1>
+
+          <!-- PDF Upload Form -->
+          <div class="card mb-4">
+            <div class="card-header">Upload Pdf(s)</div>
+            <div class="card-body">
+              <input type="file" id="pdfFiles" class="form-control" multiple />
+              <button id="uploadButton" class="btn btn-primary mt-3">
+                Submit & Process
+              </button>
+              <div class="dots-container d-nonee" id="dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Question Form -->
+          <div class="card mb-4">
+            <div class="card-header">Ask a Question</div>
+            <div class="card-body">
+              <input
+                type="text"
+                id="question"
+                class="form-control"
+                placeholder="Your Question"
+                required
+              />
+              <button id="questionButton" class="btn btn-success mt-3">
+                Submit
+              </button>
+            </div>
+          </div>
+          <div class="loader d-nonee" id="loader"></div>
+          <!-- Display Messages -->
+          <div id="messages" class="alert alert-info d-none" role="alert">
+            <pre id="messageList" class=""></pre>
+          </div>
+
+          <div class="text-end mb-4">
+            <button id="showHistory" class="btn btn-primary mt-3" onclick="showHistoryTable()">Show History</button>
+          </div>
+
+          <div class="card mb-4 d-nonee" id="table-card">
+            <div class="card-header">Search History</div>
+            <div class="card-body">
+          <div class="history-table" id="historyTable">
+            <table class="table table-bordered table-responsive">
+              <thead>
+                <tr>
+                  <th>Question</th>
+                  <th>Answer</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="history">
+                <!-- Dynamic history rows will be inserted here -->
+              </tbody>
+            </table>
+          </div>
+          </div>
+          </div>
+        </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer mt-5">
+      <p class="py-3 fw-bold m-0">Developed By T-REX (APTECH METRO STAR GATE) &copy; 2024. All Rights Reserved.</p>
+  </div>
+
+    <!-- Translation History Section -->
+
     <!-- Footer code here -->
     <!-- Bootstrap JS (optional) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+    
+      document.addEventListener("DOMContentLoaded", function () {
+        loadHistoryFromSession();
+        checkButtonStatus();
+        
+      if (history.length > 0) {
+        document.getElementById("historyTable").style.display = "block";
+      }
+      });
       const messageList = document.getElementById("messageList");
+      const messages = document.getElementById("messages");
+      const dots = document.getElementById("dots");
+      const loader = document.getElementById("loader");
+      const subtn = document.getElementById("uploadButton");
+
       document
         .getElementById("uploadButton")
         .addEventListener("click", async () => {
           const files = document.getElementById("pdfFiles").files;
           const formData = new FormData();
-          const progressContainer =
-            document.getElementById("progressContainer");
-          const progressBar = document.getElementById("progressBar");
-          const messageList = document.getElementById("messageList");
+
           if (files.length === 0) {
             alert("Please select files to upload.");
             return;
           }
-
-          // Show the progress bar when upload starts
-          progressContainer.classList.remove("d-none");
-
           for (const file of files) {
             formData.append("file", file);
           }
-
-          const xhr = new XMLHttpRequest();
-          xhr.open("POST", "/", true);
-
-          // Show the progress bar when upload starts
-          progressContainer.classList.remove("d-none");
-
-          // Track the upload progress
-          xhr.upload.addEventListener("progress", (event) => {
-            if (event.lengthComputable) {
-              const percentComplete = (event.loaded / event.total) * 100;
-              progressBar.style.width = percentComplete + "%";
-              progressBar.textContent = Math.round(percentComplete) + "%";
-            }
-          });
-
-          // On upload complete
-          xhr.addEventListener("load", () => {
-            if (xhr.status === 200) {
-              const result = JSON.parse(xhr.responseText);
-              displayMessages(result);
-
-              // Hide the progress bar after upload completes
-              setTimeout(() => {
-                progressContainer.classList.add("d-none");
-                progressBar.style.width = "0%"; // Reset progress bar
-                progressBar.textContent = "0%";
-              }, 1000);
-            } else {
-              console.error("Error uploading files:", xhr.statusText);
-              messageList.innerHTML = "Error in uploading files";
-              progressContainer.classList.add("d-none");
-            }
-          });
-
-          // Handle error
-          xhr.addEventListener("error", () => {
-            console.error("Error uploading files");
-            messageList.innerHTML = "Error in uploading files";
-            progressContainer.classList.add("d-none");
-          });
-
-          // Send the request
-          xhr.send(formData);
-
+          dots.classList.remove("d-nonee");
+          dots.classList.add("d-blockk");
+          subtn.innerHTML = "Loading ...";
           try {
             const response = await fetch("/", {
               method: "POST",
@@ -139,12 +240,14 @@
             });
             const result = await response.json();
             displayMessages(result);
-            console.log(result);
           } catch (error) {
             console.error("Error uploading files:", error);
             messageList.innerHTML = "";
             messageList.innerHTML = "Error in uploading files";
           }
+          dots.classList.remove("d-blockk");
+          dots.classList.add("d-nonee");
+          subtn.innerHTML = "Submit & Process";
         });
 
       document
@@ -153,6 +256,15 @@
           btn = document.getElementById("questionButton");
 
           const question = document.getElementById("question").value;
+
+          if (question == "") {
+            alert("Please ask question!");
+          }
+
+          messages.classList.remove("d-blockk");
+          messages.classList.add("d-nonee");
+          loader.classList.add("d-blockk");
+          loader.classList.remove("d-nonee");
           btn.innerHTML = "Loading ...";
           try {
             const response = await fetch("/ask", {
@@ -163,25 +275,117 @@
               body: JSON.stringify({ question }),
             });
             const result = await response.json();
+            loader.classList.add("d-nonee");
+            loader.classList.remove("d-blockk");
+            messages.classList.remove("d-nonee");
+            messages.classList.add("d-blockk");
             displayMessages(result);
           } catch (error) {
             console.error("Error asking question:", error);
             messageList.innerHTML = "";
             messageList.innerHTML = "Error in asking queations";
           }
-          btn.innerHTML = "submit";
+          btn.innerHTML = "Submit";
         });
 
       function displayMessages(result) {
+        const question = document.getElementById("question").value;
         messageList.innerHTML = "";
 
         result.messages.forEach((message) => {
           const listItem = document.createElement("li");
           listItem.textContent = message.trim();
           messageList.appendChild(listItem);
+          addToHistory(question, message);
         });
         document.getElementById("messages").classList.remove("d-none");
       }
+
+      function addToHistory(question, answer) {
+   
+        let history = JSON.parse(sessionStorage.getItem("answerhistory")) || [];
+
+ 
+        const newEntry = { question, answer };
+        history.push(newEntry);
+
+    
+        sessionStorage.setItem("answerhistory", JSON.stringify(history));
+
+        renderHistoryRow(newEntry, history.length - 1);
+        checkButtonStatus();
+        
+        document.getElementById("historyTable").style.display = "block";
+      }
+
+      function loadHistoryFromSession() {
+        const history =
+          JSON.parse(sessionStorage.getItem("answerhistory")) || [];
+
+        history.forEach((entry, index) => {
+          renderHistoryRow(entry, index);
+        });
+      }
+      function renderHistoryRow(entry, index) {
+        // console.log(entry, index);
+        const historyTable = document.getElementById("history");
+        let rowHTML = `<tr id="row-${index}">
+                            <td>${entry.question}</td>
+                            <td sytle="text-wrap:nowrap;">${entry.answer}</td>
+                            <td class="text-center"><span class="btn btn-outline-danger" onclick="deleteHistoryy(${index})">&times;</span></td>
+                          </tr>`;
+        historyTable.innerHTML += rowHTML;
+        checkButtonStatus();
+      }
+
+      function deleteHistoryy(index) {
+        // Load history from session storage
+        let history = JSON.parse(sessionStorage.getItem("answerhistory")) || [];
+
+        // Remove the selected entry
+        history.splice(index, 1);
+
+        // Save the updated history back to session storage
+        sessionStorage.setItem("answerhistory", JSON.stringify(history));
+
+        // Remove the corresponding row from the table
+        document.getElementById(`row-${index}`).remove();
+
+        // Re-render the table to update IDs after deletion
+        document.getElementById("history").innerHTML = "";
+        loadHistoryFromSession();
+        checkButtonStatus();
+      }
+
+      function showHistoryTable() {
+        const showtable = document.getElementById('table-card');
+        const btnTable = document.getElementById('showHistory');
+
+        if(btnTable.innerHTML == "Show History"){
+          btnTable.innerHTML = "Hide History"
+          showtable.classList.remove('d-nonee');
+          showtable.classList.add('d-blockk');
+        }else{
+          btnTable.innerHTML = "Show History"
+          showtable.classList.add('d-nonee');
+          showtable.classList.remove('d-blockk');
+        }
+
+       
+
+
+        
+      }
+      function  checkButtonStatus(){
+        const history =
+          JSON.parse(sessionStorage.getItem("answerhistory")) || [];
+
+          if(history.length > 0){
+            document.getElementById('showHistory').classList.add('d-blockk')
+          }else{
+            document.getElementById('showHistory').classList.add('d-nonee')
+          }
+       }
     </script>
   </body>
 </html>
