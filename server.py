@@ -14,30 +14,21 @@ from dotenv import load_dotenv
 import logging
 from PyPDF2.errors import PdfReadError
 
-# Load environment variables
 load_dotenv()
+app = Flask(__name__)
 
-# google_api_key = os.getenv("GOOGLE_API_KEY")
+google_api_key = os.getenv("GOOGLE_API_KEY")
 
-# if not google_api_key:
-#     raise ValueError("Google API Key not found. Please check your environment settings.")
+if not google_api_key:
+    raise ValueError("Google API Key not found. Please check your environment settings.")
 
-# genai.configure(api_key=google_api_key)
-
-genai_keys = [
-        "AIzaSyD4AvqSy5yE6FVIceijwFViKi76SObHsOY",
-        "AIzaSyAPasufInx1YSA2N83orvuagkMe4ZnSOfE",
-        'AIzaSyCu4O8kGxwU1BqGhlbiEnB-QQpEPzuEKfM',
-        'AIzaSyCvb9F0bK_R4H14KDnWnbJeZSnIWvsDlAM'
-
-    ]
+genai.configure(api_key=google_api_key)
 
 logging.basicConfig(level=logging.INFO)
 
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = {'pdf'}
 
-app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 if not os.path.exists(UPLOAD_FOLDER):
