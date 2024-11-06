@@ -1,0 +1,4 @@
+Main Link: https://technological-billye-minisolutions-dac35816.koyeb.app/
+Alternate Link: https://apgenie.streamlit.app/
+
+Github Link: https://github.com/ChouhdryRizwan/flaskAppGenei
